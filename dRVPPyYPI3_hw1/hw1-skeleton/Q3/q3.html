@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<!-- run: http-server & -->
+
+<head>
+  <style>
+    <!-- define CSS rules -->
+  </style>
+</head>
+
+<body>
+
+  <script src="lib/d3/d3.min.js"></script>
+  <script src="lib/d3-dsv/d3-dsv.min.js"></script>
+  <script src="lib/d3-fetch/d3-fetch.min.js"></script>
+
+
+  <script>
+    // define the dimensions and margins for the graph
+
+
+    // define function to parse time in years format
+	
+
+    // create scales x & y for X and Y axis and set their ranges
+
+
+
+    // append svg element to the body of the page
+    // set dimensions and position of the svg element
+    var svg = d3.select("body").append("svg") 
+
+
+    // Get the data
+	var pathToCsv = "";		// path to csv
+	
+    d3.dsv(",", pathToCsv, function (d) {
+      return {
+        // format data attributes if required
+      }
+    }).then(function (data) {
+      console.log(data); // you should see the data in your browser's developer tools console 
+      
+      /* Create bar plot using data from csv */
+
+      // set the domains of X and Y scales based on data
+      x.domain();
+      y.domain();
+
+      // Add bars to svg - create new elements based on your data
+      svg.selectAll()
+
+
+      // Add the X Axis
+      svg.append()
+
+      // Add the text label for X Axis
+      svg.append()
+
+      // Add the Y Axis
+      svg.append()
+
+      // Add the text label for Y axis
+      svg.append()
+
+
+    }).catch(function (error) {
+      console.log(error);
+    });
+
+
+  </script>
+
+</body>
