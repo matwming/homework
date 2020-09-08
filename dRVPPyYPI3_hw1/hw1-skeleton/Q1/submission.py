@@ -172,16 +172,22 @@ class TMDBAPIUtils:
                 Note that this is an example of the structure of the list and some of the fields returned by the API. The result of the API call will include many more fields for each cast member.
         Important: the exclude_ids processing should occur prior to limiting output.
         """
-        conn = http.client.HTTPSConnection('api.themoviedb.org')
-        conn.request("Get", f"/3/movie/{movie_id}/credits?api_key={self.api_key}")
+        conn = http.client.HTTPSConnection("api.themoviedb.org")
+        payload = ''
+        headers = {}
+        conn.request("GET", f"/3/movie/{movie_id}/credits?api_key={self.api_key}", payload, headers)
         res = conn.getresponse()
         data = res.read()
         cast = json.loads(data.decode('utf-8')).get('cast')
+        # print('result',cast)
+
         if exclude_ids:
-            result = self.filterExcludeId(cast, exclude_ids)
+            cast = self.filterExcludeId(cast, exclude_ids)
+
         if limit:
-            result = self.filterLimit(cast, limit)
-        return result
+            cast = self.filterLimit(cast, limit)
+        # print('filtered result',cast)
+        return cast
 
     def filterExcludeId(self, cast, exclude_ids):
         temp = cast
@@ -218,10 +224,10 @@ class TMDBAPIUtils:
         conn.request("GET", f"/3/person/{person_id}/movie_credits?api_key={self.api_key}&language=en-US")
         res = conn.getresponse()
         data = res.read()
-        result = data.decode("utf-8")
+        cast = json.loads(data.decode('utf-8')).get('cast')
         if vote_avg_threshold:
-            return list(filter(lambda x: x.get('vote_average') > vote_avg_threshold, result))
-        return result
+            return list(filter(lambda x: x.get('vote_average') >= vote_avg_threshold, cast))
+        return cast
 
 
 #############################################################################################################################
@@ -306,7 +312,9 @@ if __name__ == "__main__":
 
 # Task 1:
     all_movie_credits: list = tmdb_api_utils.get_movie_credits_for_person('5064')
+    print('starting task 1...')
     for movie in all_movie_credits:
+        print('movieId',movie.get('id'))
         all_movies = tmdb_api_utils.get_movie_cast(movie.get('id'))
         all_movies_cast_members = list(filter(lambda x: x.get('order') >= 0 or x.get('order') <= 2, all_movies))
         for member in all_movies_cast_members:
@@ -316,6 +324,7 @@ if __name__ == "__main__":
     all_nodes = graph.nodes
 
     def task2() :
+        print('starting task 2...')
         for node in all_nodes:
             (id, name) = node
             print('id', id)
