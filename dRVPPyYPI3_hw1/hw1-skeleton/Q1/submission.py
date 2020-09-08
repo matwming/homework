@@ -49,50 +49,45 @@ class Graph:
         if with_nodes_file and with_edges_file:
             nodes_CSV = csv.reader(open(with_nodes_file))
             nodes_CSV = list(nodes_CSV)[1:]
-            self.nodes = [(n[0],n[1]) for n in nodes_CSV]
+            self.nodes = [(n[0], n[1]) for n in nodes_CSV]
 
             edges_CSV = csv.reader(open(with_edges_file))
             edges_CSV = list(edges_CSV)[1:]
-            self.edges = [(e[0],e[1]) for e in edges_CSV]
+            self.edges = [(e[0], e[1]) for e in edges_CSV]
 
-
-    def add_node(self, id: str, name: str)->None:
+    def add_node(self, id: str, name: str) -> None:
         """
         add a tuple (id, name) representing a node to self.nodes if it does not already exist
         The graph should not contain any duplicate nodes
         """
-        self.nodes.append(id, name)
+        self.nodes.append((id, name))
         temp = list(set([i for i in self.nodes]))
         self.nodes = temp
 
-
-    def add_edge(self, source: str, target: str)->None:
+    def add_edge(self, source: str, target: str) -> None:
         """
         Add an edge between two nodes if it does not already exist.
         An edge is represented by a tuple containing two strings: e.g.: ('source', 'target').
         Where 'source' is the id of the source node and 'target' is the id of the target node
         e.g., for two nodes with ids 'a' and 'b' respectively, add the tuple ('a', 'b') to self.edges
         """
-        self.edges.append(source, target)
+        self.edges.append((source, target))
         temp = list(set([i for i in self.edges]))
         self.edges = temp
 
-
-    def total_nodes(self)->int:
+    def total_nodes(self) -> int:
         """
         Returns an integer value for the total number of nodes in the graph
         """
         return len(self.nodes)
 
-
-    def total_edges(self)->int:
+    def total_edges(self) -> int:
         """
         Returns an integer value for the total number of edges in the graph
         """
         return len(self.edges)
 
-
-    def max_degree_nodes(self)->dict:
+    def max_degree_nodes(self) -> dict:
         """
         Return the node(s) with the highest degree
         Return multiple nodes in the event of a tie
@@ -102,14 +97,12 @@ class Graph:
         """
         return NotImplemented
 
-
     def print_nodes(self):
         """
         No further implementation required
         May be used for de-bugging if necessary
         """
         print(self.nodes)
-
 
     def print_edges(self):
         """
@@ -118,9 +111,8 @@ class Graph:
         """
         print(self.edges)
 
-
     # Do not modify
-    def write_edges_file(self, path="edges.csv")->None:
+    def write_edges_file(self, path="edges.csv") -> None:
         """
         write all edges out as .csv
         :param path: string
@@ -137,9 +129,8 @@ class Graph:
         edges_file.close()
         print("finished writing edges to csv")
 
-
     # Do not modify
-    def write_nodes_file(self, path="nodes.csv")->None:
+    def write_nodes_file(self, path="nodes.csv") -> None:
         """
         write all nodes out as .csv
         :param path: string
@@ -155,15 +146,13 @@ class Graph:
         print("finished writing nodes to csv")
 
 
-
-class  TMDBAPIUtils:
+class TMDBAPIUtils:
 
     # Do not modify
-    def __init__(self, api_key:str):
-        self.api_key=api_key
+    def __init__(self, api_key: str):
+        self.api_key = api_key
 
-
-    def get_movie_cast(self, movie_id:str, limit:int=None, exclude_ids:list=None) -> list:
+    def get_movie_cast(self, movie_id: str, limit: int = None, exclude_ids: list = None) -> list:
         """
         Get the movie cast for a given movie id, with optional parameters to exclude an cast member
         from being returned and/or to limit the number of returned cast members
@@ -187,9 +176,30 @@ class  TMDBAPIUtils:
         conn.request("Get", f"/3/movie/{movie_id}/credits?api_key={self.api_key}")
         res = conn.getresponse()
         data = res.read()
-        return data.decode('utf-8')
+        cast = json.loads(data.decode('utf-8')).get('cast')
+        if exclude_ids:
+            result = self.filterExcludeId(cast, exclude_ids)
+        if limit:
+            result = self.filterLimit(cast, limit)
+        return result
 
-    def get_movie_credits_for_person(self, person_id:str, vote_avg_threshold:float=None)->list:
+    def filterExcludeId(self, cast, exclude_ids):
+        temp = cast
+        for i in exclude_ids:
+            print('temp2', i)
+            temp = list(filter(lambda x: x.get('id') != i, temp))
+        return temp
+
+    def filterLimit(self, cast, limit):
+        result = []
+        for i in cast:
+            if i.get('order') >= 0 or i.get('order') <= 4:
+                result.append(i)
+                if len(result) == limit:
+                    return result
+                return result
+
+    def get_movie_credits_for_person(self, person_id: str, vote_avg_threshold: float = None) -> list:
         """
         Using the TMDb API, get the movie credits for a person serving in a cast role
         documentation url: https://developers.themoviedb.org/3/people/get-person-movie-credits
@@ -204,7 +214,14 @@ class  TMDBAPIUtils:
                 'title': 'Long, Stock and Two Smoking Barrels' # the title (not original title) of the credit
                 'vote_avg': 5.0 # the float value of the vote average value for the credit}, ... ]
         """
-        return NotImplemented
+        conn = http.client.HTTPSConnection("api.themoviedb.org")
+        conn.request("GET", f"/3/person/{person_id}/movie_credits?api_key={self.api_key}&language=en-US")
+        res = conn.getresponse()
+        data = res.read()
+        result = data.decode("utf-8")
+        if vote_avg_threshold:
+            return list(filter(lambda x: x.get('vote_average') > vote_avg_threshold, result))
+        return result
 
 
 #############################################################################################################################
@@ -266,7 +283,7 @@ class  TMDBAPIUtils:
 #   can occasionally result in timeout errors. It may be necessary to insert periodic sleeps when you are building your graph.
 
 
-def return_name()->str:
+def return_name() -> str:
     """
     Return a string containing your GT Username
     e.g., gburdell3
@@ -275,7 +292,7 @@ def return_name()->str:
     return NotImplemented
 
 
-def return_argo_lite_snapshot()->str:
+def return_argo_lite_snapshot() -> str:
     """
     Return the shared URL of your published graph in Argo-Lite
     """
@@ -283,11 +300,36 @@ def return_argo_lite_snapshot()->str:
 
 
 if __name__ == "__main__":
-
     graph = Graph()
     graph.add_node(id='5064', name='Meryl Streep')
     tmdb_api_utils = TMDBAPIUtils(api_key='b8ca5fc242190d82a24e918c4d974a76')
 
+# Task 1:
+    all_movie_credits: list = tmdb_api_utils.get_movie_credits_for_person('5064')
+    for movie in all_movie_credits:
+        all_movies = tmdb_api_utils.get_movie_cast(movie.get('id'))
+        all_movies_cast_members = list(filter(lambda x: x.get('order') >= 0 or x.get('order') <= 2, all_movies))
+        for member in all_movies_cast_members:
+            graph.add_node(member.get('id'), member.get('name'))
+            graph.add_edge('5064', member.get('id'))
+# Task 2:
+    all_nodes = graph.nodes
+
+    def task2() :
+        for node in all_nodes:
+            (id, name) = node
+            print('id', id)
+            movie_credits: list = tmdb_api_utils.get_movie_credits_for_person(id, 8.0)
+            for movie in movie_credits:
+                movie_cast_members = list(
+                    filter(lambda x: x.get('order') <= 2, tmdb_api_utils.get_movie_cast(movie.get('id'), 3)))
+                print('movie_cast_member', movie_cast_members)
+                for member in movie_cast_members:
+                    graph.add_node(member.get('id'), member.get('name'))
+                    graph.add_edge('5064', member.get('id'))
+# Run task 2 at least 3 times
+    for i in range(3):
+        task2()
     # call functions or place code here to build graph (graph building code not graded)
 
     graph.write_edges_file()
