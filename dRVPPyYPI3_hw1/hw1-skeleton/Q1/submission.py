@@ -198,12 +198,13 @@ class TMDBAPIUtils:
 
     def filterLimit(self, cast, limit):
         result = []
-        for i in cast:
-            if i.get('order') >= 0 or i.get('order') <= 4:
-                result.append(i)
-                if len(result) == limit:
-                    return result
-                return result
+        # for i in cast:
+        #     if i.get('order') >= 0 or i.get('order') <= 4:
+        #         result.append(i)
+        #         if len(result) == limit or len(result)<limit:
+        #             return result
+        return list(filter(lambda x:x.get('order')>=0 or x.get('order')<=4,cast))[0:limit-1]
+
 
     def get_movie_credits_for_person(self, person_id: str, vote_avg_threshold: float = None) -> list:
         """
@@ -318,14 +319,14 @@ if __name__ == "__main__":
         all_movies = tmdb_api_utils.get_movie_cast(movie.get('id'))
         all_movies_cast_members = list(filter(lambda x: x.get('order') >= 0 or x.get('order') <= 2, all_movies))
         for member in all_movies_cast_members:
-            graph.add_node(member.get('id'), member.get('name'))
+            graph.add_node(str(member.get('id')), member.get('name'))
             graph.add_edge('5064', member.get('id'))
 # Task 2:
     all_nodes = graph.nodes
 
     def task2() :
         print('starting task 2...')
-        for node in all_nodes:
+        for node in all_nodes[0:5]:
             (id, name) = node
             print('id', id)
             movie_credits: list = tmdb_api_utils.get_movie_credits_for_person(id, 8.0)
@@ -334,11 +335,15 @@ if __name__ == "__main__":
                     filter(lambda x: x.get('order') <= 2, tmdb_api_utils.get_movie_cast(movie.get('id'), 3)))
                 print('movie_cast_member', movie_cast_members)
                 for member in movie_cast_members:
-                    graph.add_node(member.get('id'), member.get('name'))
-                    graph.add_edge('5064', member.get('id'))
+                    print('movie',movie)
+                    graph.add_node(str(member.get('id')), member.get('name'))
+                    graph.add_edge('5064', str(member.get('id')))
+
 # Run task 2 at least 3 times
-    for i in range(3):
-        task2()
+#     for i in range(3):
+#         task2()
+    task2()
+
     # call functions or place code here to build graph (graph building code not graded)
 
     graph.write_edges_file()
